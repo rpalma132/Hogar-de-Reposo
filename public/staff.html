@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Trabajadores</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Cambiar color del título */
+    .title-custom {
+      color: #512da8; /* Morado oscuro */
+    }
+    /* Cambiar colores de los botones */
+    .btn-custom {
+      background-color: #b39ddb; /* Morado medio claro */
+      color: white;
+    }
+    .btn-custom:hover {
+      background-color: #9575cd; /* Morado más oscuro al pasar el cursor */
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="title-custom">Gestión de Trabajadores</h1>
+    <a href="index.html" class="btn btn-custom mb-4">Volver al Inicio</a>
+
+    <!-- Formulario -->
+    <form id="staffForm" class="mb-3">
+      <div class="row mb-2">
+        <div class="col-md-6">
+          <label for="staffName" class="form-label">Nombre</label>
+          <input type="text" class="form-control" id="staffName" placeholder="Nombre completo" required>
+        </div>
+        <div class="col-md-6">
+          <label for="staffRole" class="form-label">Rol</label>
+          <select class="form-control" id="staffRole" required>
+            <option value="" disabled selected>Selecciona un rol</option>
+            <option value="Auxiliar">Auxiliar</option>
+            <option value="Enfermero">Enfermero</option>
+            <option value="Administrativo">Administrativo</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-custom">Agregar Trabajador</button>
+    </form>
+
+    <!-- Tabla -->
+    <table class="table table-striped" id="staffTable">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Rol</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const staffTable = document.getElementById('staffTable').querySelector('tbody');
+
+    // Cargar trabajadores desde el servidor
+    async function loadStaff() {
+      const response = await fetch('http://localhost:3000/api/trabajadores');
+      const workers = await response.json();
+
+      staffTable.innerHTML = '';
+      workers.forEach((worker) => {
+        const row = staffTable.insertRow();
+        row.innerHTML = `
+          <td>${worker.nombre}</td>
+          <td>${worker.rol}</td>
+          <td>
+            <button class="btn btn-warning btn-sm" onclick="editRow(${worker.id})">Editar</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteRow(${worker.id})">Eliminar</button>
+          </td>
+        `;
+      });
+    }
+
+    // Agregar trabajador
+    async function addStaff(event) {
+      event.preventDefault();
+
+      const name = document.getElementById('staffName').value;
+      const role = document.getElementById('staffRole').value;
+
+      await fetch('http://localhost:3000/api/trabajadores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nombre: name, rol: role }),
+      });
+
+      document.getElementById('staffForm').reset();
+      loadStaff();
+    }
+
+    // Eliminar trabajador
+    async function deleteRow(id) {
+      await fetch(`http://localhost:3000/api/trabajadores/${id}`, {
+        method: 'DELETE',
+      });
+
+      loadStaff();
+    }
+
+    // Inicializar
+    document.getElementById('staffForm').addEventListener('submit', addStaff);
+    loadStaff();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

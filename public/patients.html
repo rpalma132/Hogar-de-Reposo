@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Pacientes</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+/* Cambiar color del título */
+.title-custom {
+color: #512da8; /* Morado oscuro */
+}
+/* Cambiar colores de los botones */
+.btn-custom {
+background-color: #b39ddb; /* Morado medio claro */
+color: white;
+}
+.btn-custom:hover {
+background-color: #9575cd; /* Morado más oscuro al pasar el cursor */
+}
+</style>
+</head>
+<body>
+<div class="container mt-5">
+<h1 class="title-custom">Gestión de Pacientes</h1>
+<a href="index.html" class="btn btn-custom mb-4">Volver al Inicio</a>
+
+<!-- Tabla de Pacientes -->
+<h2 class="mb-3">Listado de Pacientes</h2>
+<table class="table table-striped" id="patientsTable">
+<thead>
+<tr>
+        <th>Nombre</th>
+        <th>RUT</th>
+        <th>Edad</th>
+        <th>Contacto de Emergencia</th>
+        <th>Ficha Médica</th>
+        <th>Medicamentos</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<!-- Formulario para Agregar Paciente -->
+<h2 class="mt-5">Agregar Paciente</h2>
+<form id="patientForm">
+<div class="row mb-2">
+<div class="col-md-6">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="nombre" placeholder="Nombre completo" required>
+</div>
+<div class="col-md-6">
+        <label for="rut" class="form-label">RUT</label>
+        <input type="text" class="form-control" id="rut" placeholder="Ingrese el RUT" required>
+</div>
+</div>
+<div class="row mb-2">
+<div class="col-md-6">
+        <label for="edad" class="form-label">Edad</label>
+        <input type="number" class="form-control" id="edad" placeholder="Edad" required>
+</div>
+<div class="col-md-6">
+        <label for="contacto" class="form-label">Contacto de Emergencia</label>
+        <input type="text" class="form-control" id="contacto" placeholder="Contacto de emergencia" required>
+</div>
+</div>
+<div class="mb-2">
+<label for="ficha" class="form-label">Ficha Médica</label>
+<textarea class="form-control" id="ficha" rows="3" placeholder="Ficha médica"></textarea>
+</div>
+<div class="mb-2">
+<label for="medicamentos" class="form-label">Medicamentos</label>
+<textarea class="form-control" id="medicamentos" rows="3" placeholder="Medicamentos"></textarea>
+</div>
+<button type="submit" class="btn btn-custom">Agregar Paciente</button>
+</form>
+</div>
+
+<script>
+const patientsTable = document.getElementById('patientsTable').querySelector('tbody');
+
+// Cargar pacientes desde el servidor
+async function loadPatients() {
+const response = await fetch('http://localhost:3000/api/pacientes');
+const patients = await response.json();
+
+patientsTable.innerHTML = '';
+patients.forEach((patient) => {
+const row = patientsTable.insertRow();
+row.innerHTML = `
+        <td>${patient.nombre}</td>
+        <td>${patient.rut}</td>
+        <td>${patient.edad}</td>
+        <td>${patient.contacto_emergencia || '-'}</td>
+        <td>${patient.ficha_medica || '-'}</td>
+        <td>${patient.medicamentos || '-'}</td>
+`;
+});
+}
+
+// Agregar paciente
+document.getElementById('patientForm').addEventListener('submit', async (event) => {
+event.preventDefault();
+
+const nombre = document.getElementById('nombre').value;
+const rut = document.getElementById('rut').value;
+const edad = document.getElementById('edad').value;
+const contacto = document.getElementById('contacto').value;
+const ficha = document.getElementById('ficha').value;
+const medicamentos = document.getElementById('medicamentos').value;
+
+try {
+const response = await fetch('http://localhost:3000/api/pacientes', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ nombre, rut, edad, contacto_emergencia: contacto, ficha_medica: ficha, medicamentos }),
+});
+
+if (response.ok) {
+        alert('Paciente agregado exitosamente');
+        document.getElementById('patientForm').reset();
+        loadPatients(); // Recargar la tabla
+} else {
+        alert('Error al agregar paciente');
+}
+} catch (error) {
+console.error(error);
+alert('Error al agregar paciente');
+}
+});
+
+// Inicializar
+loadPatients();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
